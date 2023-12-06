@@ -1,9 +1,8 @@
 const imageInput = document.getElementById('imageInput');
 const imageCanvas = document.getElementById('imageCanvas');
 const ctx = imageCanvas.getContext('2d');
-let img;
 let isDrawing = false;
-let boxes = []; // Array to store box coordinates
+let startX, startY, width, height;
 
 imageInput.addEventListener('change', function (event) {
   const file = event.target.files[0];
@@ -12,7 +11,7 @@ imageInput.addEventListener('change', function (event) {
     const reader = new FileReader();
 
     reader.onload = function (e) {
-      img = new Image();
+      const img = new Image();
 
       img.onload = function () {
         imageCanvas.width = img.width;
@@ -30,29 +29,27 @@ imageInput.addEventListener('change', function (event) {
 // Function to draw a box on the canvas
 function draw() {
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-  ctx.drawImage(img, 0, 0, img.width, img.height);
+  ctx.drawImage(img, 0, 0);
 
-  boxes.forEach(box => {
+  if (isDrawing) {
     ctx.strokeStyle = 'red';
     ctx.lineWidth = 2;
-    ctx.strokeRect(box.startX, box.startY, box.width, box.height);
-  });
+    ctx.strokeRect(startX, startY, width, height);
+  }
 }
 
 imageCanvas.addEventListener('mousedown', (e) => {
   isDrawing = true;
-  const startX = e.offsetX;
-  const startY = e.offsetY;
-  const box = { startX, startY, width: 0, height: 0 };
-  boxes.push(box);
-  draw();
+  startX = e.offsetX;
+  startY = e.offsetY;
+  width = 0;
+  height = 0;
 });
 
 imageCanvas.addEventListener('mousemove', (e) => {
   if (isDrawing) {
-    const currentBox = boxes[boxes.length - 1];
-    currentBox.width = e.offsetX - currentBox.startX;
-    currentBox.height = e.offsetY - currentBox.startY;
+    width = e.offsetX - startX;
+    height = e.offsetY - startY;
     draw();
   }
 });
@@ -60,12 +57,3 @@ imageCanvas.addEventListener('mousemove', (e) => {
 imageCanvas.addEventListener('mouseup', () => {
   isDrawing = false;
 });
-
-// Example function to send box data to the backend via REST API
-function sendBoxDataToBackend() {
-  // Replace this section with your REST API endpoint and actual data to be sent
-  // For demonstration, logging the box coordinates to the console
-  console.log('Box Coordinates:');
-  console.log(boxes);
-  // Here, you can make an AJAX request (e.g., using Fetch or Axios) to send the data to the backend
-}
