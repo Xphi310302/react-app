@@ -84,6 +84,8 @@ imageCanvas.addEventListener('mousedown', (e) => {
 });
 
 
+
+
 imageCanvas.addEventListener('mousemove', (e) => {
   const rect = imageCanvas.getBoundingClientRect();
   mouseX = e.clientX - rect.left;
@@ -144,34 +146,6 @@ imageCanvas.addEventListener('contextmenu', (e) => {
   }
 });
 
-
-function findHandle(x, y) {
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
-    const resizeHandleX = box.startX + box.width;
-    const resizeHandleY = box.startY + box.height;
-
-    // Check if the click is within the circle's region
-    const distX = x - resizeHandleX;
-    const distY = y - resizeHandleY;
-    const distance = Math.sqrt(distX * distX + distY * distY);
-
-    if (distance <= 6) {
-      return { type: 'resize', boxIndex: i };
-    }
-
-    if (
-      x >= box.startX &&
-      x <= box.startX + box.width &&
-      y >= box.startY &&
-      y <= box.startY + box.height
-    ) {
-      return { type: 'drag', boxIndex: i };
-    }
-  }
-  return { type: 'none', boxIndex: -1 };
-}
-
 function findBox(x, y) {
   for (let i = 0; i < boxes.length; i++) {
     const box = boxes[i];
@@ -186,3 +160,46 @@ function findBox(x, y) {
   }
   return -1;
 }
+
+function findHandle(x, y) {
+  for (let i = 0; i < boxes.length; i++) {
+    const box = boxes[i];
+    
+    let topLeftX, topLeftY, bottomRightX, bottomRightY;
+    if (box.width >= 0 && box.height >= 0) {
+      topLeftX = box.startX;
+      topLeftY = box.startY;
+      bottomRightX = box.startX + box.width;
+      bottomRightY = box.startY + box.height;
+    } else {
+      bottomRightX = box.startX;
+      bottomRightY = box.startY;
+      topLeftX = box.startX + box.width;
+      topLeftY = box.startY + box.height;
+    }
+
+    // Calculate the center of the circle (resize handle)
+    const centerX = bottomRightX;
+    const centerY = bottomRightY;
+
+    // Check if the click is within the circle's region
+    const distX = x - centerX;
+    const distY = y - centerY;
+    const distance = Math.sqrt(distX * distX + distY * distY);
+
+    if (distance <= 6) {
+      return { type: 'resize', boxIndex: i };
+    }
+
+    if (
+      x >= topLeftX &&
+      x <= bottomRightX &&
+      y >= topLeftY &&
+      y <= bottomRightY
+    ) {
+      return { type: 'drag', boxIndex: i };
+    }
+  }
+  return { type: 'none', boxIndex: -1 };
+}
+
