@@ -1,0 +1,12 @@
+body {
+    font-family: Arial, sans-serif;
+  }
+  
+  .image-container {
+    position: relative;
+  }
+  
+  #imageCanvas {
+    border: 1px solid #ccc;
+  }
+  
