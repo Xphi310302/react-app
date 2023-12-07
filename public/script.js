@@ -216,36 +216,6 @@ function findHandle(x, y) {
 }
 
 // // Function to save boxes to a JSON file
-// function saveBoxes() {
-// 	const dataToSave = JSON.stringify(boxes);
-// 	const blob = new Blob([dataToSave], { type: 'application/json' });
-// 	const url = URL.createObjectURL(blob);
-  
-// 	const a = document.createElement('a');
-// 	a.href = url;
-// 	a.download = 'boxes.json';
-// 	document.body.appendChild(a);
-// 	a.click();
-// 	document.body.removeChild(a);
-// 	URL.revokeObjectURL(url);
-//   }
-  
-//   // Function to load boxes from a JSON file
-//   function loadBoxes(event) {
-// 	const file = event.target.files[0];
-  
-// 	if (file) {
-// 	  const reader = new FileReader();
-  
-// 	  reader.onload = function (e) {
-// 		const loadedData = JSON.parse(e.target.result);
-// 		boxes = loadedData;
-// 		draw();
-// 	  };
-  
-// 	  reader.readAsText(file);
-// 	}
-//   }
 function saveBoxes() {
   // Save boxes along with their associated text
   const boxesToSave = boxes.map(box => ({
@@ -293,6 +263,19 @@ function loadBoxes(event) {
     reader.readAsText(file);
   }
 }
+
+// Event listener for the text input field to update box text on pressing Enter
+const inputText = document.getElementById('textInput');
+inputText.addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    if (selectedBox !== null && inputText.value.trim() !== '') {
+      selectedBox.text = inputText.value.trim();
+      inputText.style.display = 'none'; // Hide text input after saving text
+      draw();
+    }
+  }
+});
+
 // Event listener for input element to load JSON file
 const loadInput = document.getElementById('loadInput');
 loadInput.addEventListener('change', loadBoxes);
