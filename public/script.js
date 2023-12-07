@@ -14,15 +14,25 @@ function draw() {
 
   boxes.forEach((box, index) => {
     ctx.strokeStyle = selectedBox === box ? 'blue' : 'red';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 0.55;
     ctx.strokeRect(box.startX, box.startY, box.width, box.height);
 
-    // Draw resize handles or additional UI elements if needed
+	 // **Comment out the following code to remove the circle**
     ctx.fillStyle = 'white';
     ctx.beginPath();
     ctx.arc(box.startX + box.width, box.startY + box.height, 6, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+
+		if (selectedBox === box) {
+			// Display text input for the selected box
+			const text = box.text || '';
+			const inputText = document.getElementById('textInput');
+			inputText.value = text;
+			inputText.style.display = 'block';
+			inputText.style.top = `${box.startY + box.height + 5}px`; // Adjust text input position
+			inputText.style.left = `${box.startX}px`; // Adjust text input position
+		}
   });
 
   if (resizingBox !== null) {
@@ -84,8 +94,6 @@ imageCanvas.addEventListener('mousedown', (e) => {
 });
 
 
-
-
 imageCanvas.addEventListener('mousemove', (e) => {
   const rect = imageCanvas.getBoundingClientRect();
   mouseX = e.clientX - rect.left;
@@ -108,14 +116,18 @@ imageCanvas.addEventListener('mousemove', (e) => {
 });
 
 
-
-
-
 imageCanvas.addEventListener('mouseup', () => {
   if (isDragging || isResizing) {
     isDragging = false;
     isResizing = false;
     resizingBox = null;
+		// Update text for the selected box
+		const inputText = document.getElementById('textInput');
+		if (selectedBox !== null && inputText.value.trim() !== '') {
+			selectedBox.text = inputText.value.trim();
+			inputText.style.display = 'none'; // Hide text input after saving text
+		}
+
     draw();
   }
 });
@@ -203,3 +215,88 @@ function findHandle(x, y) {
   return { type: 'none', boxIndex: -1 };
 }
 
+// // Function to save boxes to a JSON file
+// function saveBoxes() {
+// 	const dataToSave = JSON.stringify(boxes);
+// 	const blob = new Blob([dataToSave], { type: 'application/json' });
+// 	const url = URL.createObjectURL(blob);
+  
+// 	const a = document.createElement('a');
+// 	a.href = url;
+// 	a.download = 'boxes.json';
+// 	document.body.appendChild(a);
+// 	a.click();
+// 	document.body.removeChild(a);
+// 	URL.revokeObjectURL(url);
+//   }
+  
+//   // Function to load boxes from a JSON file
+//   function loadBoxes(event) {
+// 	const file = event.target.files[0];
+  
+// 	if (file) {
+// 	  const reader = new FileReader();
+  
+// 	  reader.onload = function (e) {
+// 		const loadedData = JSON.parse(e.target.result);
+// 		boxes = loadedData;
+// 		draw();
+// 	  };
+  
+// 	  reader.readAsText(file);
+// 	}
+//   }
+function saveBoxes() {
+  // Save boxes along with their associated text
+  const boxesToSave = boxes.map(box => ({
+    startX: box.startX,
+    startY: box.startY,
+    width: box.width,
+    height: box.height,
+    text: box.text || '' // Ensure text property exists or set it to an empty string
+  }));
+
+  const dataToSave = JSON.stringify(boxesToSave);
+  const blob = new Blob([dataToSave], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'boxes.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function loadBoxes(event) {
+  const file = event.target.files[0];
+
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const loadedData = JSON.parse(e.target.result);
+
+      // Load boxes with their associated text
+      boxes = loadedData.map(data => ({
+        startX: data.startX,
+        startY: data.startY,
+        width: data.width,
+        height: data.height,
+        text: data.text || '' // Ensure text property exists or set it to an empty string
+      }));
+
+      draw();
+    };
+
+    reader.readAsText(file);
+  }
+}
+// Event listener for input element to load JSON file
+const loadInput = document.getElementById('loadInput');
+loadInput.addEventListener('change', loadBoxes);
+
+// Event listener for saving boxes when a button is clicked
+const saveButton = document.getElementById('saveButton');
+saveButton.addEventListener('click', saveBoxes);
