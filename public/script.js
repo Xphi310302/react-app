@@ -7,6 +7,7 @@ let mouseX, mouseY;
 let selectedBox = null;
 let boxes = []; // Array to store box coordinates
 let resizingBox = null; // Variable to track the box being resized
+let isResizing = false; // Flag to track resize status
 
 function draw() {
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
@@ -14,7 +15,7 @@ function draw() {
 
   boxes.forEach((box, index) => {
     ctx.strokeStyle = selectedBox === box ? 'blue' : 'red';
-    ctx.lineWidth = 0.55;
+    ctx.lineWidth = 0.6;
     ctx.strokeRect(box.startX, box.startY, box.width, box.height);
 
 	 // **Comment out the following code to remove the circle**
@@ -41,27 +42,41 @@ function draw() {
   }
 }
 
+// Adding an event listener to 'imageInput' element when a file is selected
 imageInput.addEventListener('change', function (event) {
-  const file = event.target.files[0];
+	// Retrieving the selected file
+	const file = event.target.files[0];
+  
+	// Checking if a file is selected
+	if (file) {
+	  // Creating a new instance of FileReader
+	  const reader = new FileReader();
+  
+	  // Event triggered when FileReader finishes reading the file
+	  reader.onload = function (e) {
+		// Creating a new Image object
+		img = new Image();
+  
+		// Event triggered when the image has finished loading
+		img.onload = function () {
+		  // Setting the canvas dimensions to match the loaded image
+		  imageCanvas.width = img.width;
+		  imageCanvas.height = img.height;
+		  
+		  // Drawing the image on the canvas
+		  ctx.drawImage(img, 0, 0, img.width, img.height);
+		};
+  
+		// Setting the source of the image to the result of FileReader
+		img.src = e.target.result;
+	  };
+  
+	  // Reading the selected file as a data URL
+	  reader.readAsDataURL(file);
+	}
+  });
 
-  if (file) {
-    const reader = new FileReader();
 
-    reader.onload = function (e) {
-      img = new Image();
-
-      img.onload = function () {
-        imageCanvas.width = img.width;
-        imageCanvas.height = img.height;
-        ctx.drawImage(img, 0, 0, img.width, img.height);
-      };
-
-      img.src = e.target.result;
-    };
-
-    reader.readAsDataURL(file);
-  }
-});
 
 imageCanvas.addEventListener('mousedown', (e) => {
   const rect = imageCanvas.getBoundingClientRect();
