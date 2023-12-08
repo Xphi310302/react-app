@@ -9,6 +9,8 @@ let boxes = []; // Array to store box coordinates
 let resizingBox = null; // Variable to track the box being resized
 let isResizing = false; // Flag to track resize status
 
+// let scale = 1;
+// let img = null;
 function draw() {
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
   ctx.drawImage(img, 0, 0, img.width, img.height);
@@ -42,6 +44,24 @@ function draw() {
   }
 }
 
+// Function to adjust the size of input elements based on imageCanvas size
+function adjustInputElementsSize() {
+	const canvasRect = imageCanvas.getBoundingClientRect();
+	const canvasWidth = canvasRect.width;
+	const canvasHeight = canvasRect.height;
+  
+	// Calculate the scaled size for input elements
+	const scaleFactor = Math.min(canvasWidth, canvasHeight) / 400; // Adjust according to your requirements
+  
+	const inputText = document.getElementById('textInput');
+	inputText.style.fontSize = `${scaleFactor * 16}px`; // Adjust font size based on canvas size
+  
+	const buttons = document.querySelectorAll('input[type="file"], #saveButton');
+	buttons.forEach(button => {
+	  button.style.fontSize = `${scaleFactor * 14}px`; // Adjust button font size
+	  button.style.padding = `${scaleFactor * 8}px ${scaleFactor * 16}px`; // Adjust button padding
+	});
+  }
 // Adding an event listener to 'imageInput' element when a file is selected
 imageInput.addEventListener('change', function (event) {
 	// Retrieving the selected file
@@ -62,7 +82,8 @@ imageInput.addEventListener('change', function (event) {
 		  // Setting the canvas dimensions to match the loaded image
 		  imageCanvas.width = img.width;
 		  imageCanvas.height = img.height;
-		  
+  
+		  adjustInputElementsSize(); // Call function to adjust input elements size
 		  // Drawing the image on the canvas
 		  ctx.drawImage(img, 0, 0, img.width, img.height);
 		};
@@ -75,6 +96,39 @@ imageInput.addEventListener('change', function (event) {
 	  reader.readAsDataURL(file);
 	}
   });
+// Adding an event listener to 'imageInput' element when a file is selected
+// imageInput.addEventListener('change', function (event) {
+// 	// Retrieving the selected file
+// 	const file = event.target.files[0];
+  
+// 	// Checking if a file is selected
+// 	if (file) {
+// 	  // Creating a new instance of FileReader
+// 	  const reader = new FileReader();
+  
+// 	  // Event triggered when FileReader finishes reading the file
+// 	  reader.onload = function (e) {
+// 		// Creating a new Image object
+// 		img = new Image();
+  
+// 		// Event triggered when the image has finished loading
+// 		img.onload = function () {
+// 		  // Setting the canvas dimensions to match the loaded image
+// 		  imageCanvas.width = img.width;
+// 		  imageCanvas.height = img.height;
+		  
+// 		  // Drawing the image on the canvas
+// 		  ctx.drawImage(img, 0, 0, img.width, img.height);
+// 		};
+  
+// 		// Setting the source of the image to the result of FileReader
+// 		img.src = e.target.result;
+// 	  };
+  
+// 	  // Reading the selected file as a data URL
+// 	  reader.readAsDataURL(file);
+// 	}
+//   });
 
 
 // Function to find if the point (x, y) is within a box or a resize handle
@@ -331,7 +385,6 @@ function loadBoxes(event) {
         reader.readAsText(file); // Read the contents of the file as text
     }
 }
-
 
 // Event listener for the text input field to update box text on pressing Enter
 const inputText = document.getElementById('textInput');

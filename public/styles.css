@@ -45,4 +45,29 @@ cursor: pointer;
 background-color: #2980b9;
 }
 
+/* Additional styling for input[type="file"] and #textInput */
+input[type="file"], #textInput {
+  font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+  box-sizing: border-box;
+  margin-bottom: 10px; /* Add some space between input elements */
+}
+
+input[type="file"]:hover, #textInput:hover {
+  background-color: #f0f0f0;
+}
+
+input[type="file"]:focus, #textInput:focus {
+  outline: none;
+  border-color: #3498db; /* Change border color on focus */
+}
+
+/* Style for the 'Choose File' button on hover */
+input[type="file"]:hover {
+  background-color: #e0e0e0;
+}
+
 
