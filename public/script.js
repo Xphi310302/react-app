@@ -96,48 +96,13 @@ imageInput.addEventListener('change', function (event) {
 	  reader.readAsDataURL(file);
 	}
   });
-// Adding an event listener to 'imageInput' element when a file is selected
-// imageInput.addEventListener('change', function (event) {
-// 	// Retrieving the selected file
-// 	const file = event.target.files[0];
-  
-// 	// Checking if a file is selected
-// 	if (file) {
-// 	  // Creating a new instance of FileReader
-// 	  const reader = new FileReader();
-  
-// 	  // Event triggered when FileReader finishes reading the file
-// 	  reader.onload = function (e) {
-// 		// Creating a new Image object
-// 		img = new Image();
-  
-// 		// Event triggered when the image has finished loading
-// 		img.onload = function () {
-// 		  // Setting the canvas dimensions to match the loaded image
-// 		  imageCanvas.width = img.width;
-// 		  imageCanvas.height = img.height;
-		  
-// 		  // Drawing the image on the canvas
-// 		  ctx.drawImage(img, 0, 0, img.width, img.height);
-// 		};
-  
-// 		// Setting the source of the image to the result of FileReader
-// 		img.src = e.target.result;
-// 	  };
-  
-// 	  // Reading the selected file as a data URL
-// 	  reader.readAsDataURL(file);
-// 	}
-//   });
 
-
-// Function to find if the point (x, y) is within a box or a resize handle
 function findHandle(x, y) {
     for (let i = 0; i < boxes.length; i++) {
         const box = boxes[i];
         
         let topLeftX, topLeftY, bottomRightX, bottomRightY;
-        // Determine the coordinates of the box corners based on width and height
+
         if (box.width >= 0 && box.height >= 0) {
             topLeftX = box.startX;
             topLeftY = box.startY;
@@ -150,31 +115,26 @@ function findHandle(x, y) {
             topLeftY = box.startY + box.height;
         }
 
-        // Calculate the center of the circle (resize handle)
         const centerX = bottomRightX;
         const centerY = bottomRightY;
 
-        // Calculate distance from the click to the center of the circle
         const distX = x - centerX;
         const distY = y - centerY;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
-        // Check if the click is within the resize handle region
         if (distance <= 6) {
             return { type: 'resize', boxIndex: i };
         }
 
-        // Check if the click is within the box region
         if (
-            x >= topLeftX &&
-            x <= bottomRightX &&
-            y >= topLeftY &&
-            y <= bottomRightY
+            x >= Math.min(topLeftX, bottomRightX) &&
+            x <= Math.max(topLeftX, bottomRightX) &&
+            y >= Math.min(topLeftY, bottomRightY) &&
+            y <= Math.max(topLeftY, bottomRightY)
         ) {
             return { type: 'drag', boxIndex: i };
         }
     }
-    // Return if the click is not within any box or resize handle
     return { type: 'none', boxIndex: -1 };
 }
 
