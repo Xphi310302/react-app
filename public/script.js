@@ -77,224 +77,281 @@ imageInput.addEventListener('change', function (event) {
   });
 
 
-
-imageCanvas.addEventListener('mousedown', (e) => {
-  const rect = imageCanvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-
-  const { type, boxIndex } = findHandle(mouseX, mouseY);
-
-  if (type === 'resize') {
-    isDragging = false;
-    isResizing = true;
-    resizingBox = boxes[boxIndex];
-    selectedBox = resizingBox; // Select the box when clicking on the resize handle
-  } else if (type === 'drag') {
-    isDragging = true;
-    selectedBox = boxes[boxIndex];
-  } else {
-    if (selectedBox !== null && selectedBox === boxes[boxIndex]) {
-      // If the clicked box is already selected, deselect it
-      selectedBox = null;
-    } else {
-      isDragging = true;
-      const box = { startX: mouseX, startY: mouseY, width: 0, height: 0 };
-      boxes.push(box);
-      selectedBox = box;
-    }
-  }
-
-  draw();
-});
-
-
-imageCanvas.addEventListener('mousemove', (e) => {
-  const rect = imageCanvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-
-  if (isDragging) {
-    if (selectedBox !== null && !isResizing) {
-      const dx = mouseX - selectedBox.startX;
-      const dy = mouseY - selectedBox.startY;
-      selectedBox.startX = mouseX;
-      selectedBox.startY = mouseY;
-      selectedBox.width -= dx;
-      selectedBox.height -= dy;
-    } else if (isResizing && resizingBox !== null) {
-      resizingBox.width = Math.max(0, mouseX - resizingBox.startX);
-      resizingBox.height = Math.max(0, mouseY - resizingBox.startY);
-    }
-    draw();
-  }
-});
-
-
-imageCanvas.addEventListener('mouseup', () => {
-  if (isDragging || isResizing) {
-    isDragging = false;
-    isResizing = false;
-    resizingBox = null;
-		// Update text for the selected box
-		const inputText = document.getElementById('textInput');
-		if (selectedBox !== null && inputText.value.trim() !== '') {
-			selectedBox.text = inputText.value.trim();
-			inputText.style.display = 'none'; // Hide text input after saving text
-		}
-
-    draw();
-  }
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Delete') {
-    if (selectedBox !== null) {
-      const index = boxes.indexOf(selectedBox);
-      if (index !== -1) {
-        boxes.splice(index, 1);
-        selectedBox = null;
-        draw();
-      }
-    }
-  }
-});
-
-imageCanvas.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  const rect = imageCanvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
-
-  const boxIndex = findBox(mouseX, mouseY);
-  if (boxIndex !== -1) {
-    boxes.splice(boxIndex, 1);
-    draw();
-  }
-});
-
-function findBox(x, y) {
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
-    if (
-      x >= box.startX &&
-      x <= box.startX + box.width &&
-      y >= box.startY &&
-      y <= box.startY + box.height
-    ) {
-      return i;
-    }
-  }
-  return -1;
-}
-
+// Function to find if the point (x, y) is within a box or a resize handle
 function findHandle(x, y) {
-  for (let i = 0; i < boxes.length; i++) {
-    const box = boxes[i];
-    
-    let topLeftX, topLeftY, bottomRightX, bottomRightY;
-    if (box.width >= 0 && box.height >= 0) {
-      topLeftX = box.startX;
-      topLeftY = box.startY;
-      bottomRightX = box.startX + box.width;
-      bottomRightY = box.startY + box.height;
-    } else {
-      bottomRightX = box.startX;
-      bottomRightY = box.startY;
-      topLeftX = box.startX + box.width;
-      topLeftY = box.startY + box.height;
+    for (let i = 0; i < boxes.length; i++) {
+        const box = boxes[i];
+        
+        let topLeftX, topLeftY, bottomRightX, bottomRightY;
+        // Determine the coordinates of the box corners based on width and height
+        if (box.width >= 0 && box.height >= 0) {
+            topLeftX = box.startX;
+            topLeftY = box.startY;
+            bottomRightX = box.startX + box.width;
+            bottomRightY = box.startY + box.height;
+        } else {
+            bottomRightX = box.startX;
+            bottomRightY = box.startY;
+            topLeftX = box.startX + box.width;
+            topLeftY = box.startY + box.height;
+        }
+
+        // Calculate the center of the circle (resize handle)
+        const centerX = bottomRightX;
+        const centerY = bottomRightY;
+
+        // Calculate distance from the click to the center of the circle
+        const distX = x - centerX;
+        const distY = y - centerY;
+        const distance = Math.sqrt(distX * distX + distY * distY);
+
+        // Check if the click is within the resize handle region
+        if (distance <= 6) {
+            return { type: 'resize', boxIndex: i };
+        }
+
+        // Check if the click is within the box region
+        if (
+            x >= topLeftX &&
+            x <= bottomRightX &&
+            y >= topLeftY &&
+            y <= bottomRightY
+        ) {
+            return { type: 'drag', boxIndex: i };
+        }
     }
-
-    // Calculate the center of the circle (resize handle)
-    const centerX = bottomRightX;
-    const centerY = bottomRightY;
-
-    // Check if the click is within the circle's region
-    const distX = x - centerX;
-    const distY = y - centerY;
-    const distance = Math.sqrt(distX * distX + distY * distY);
-
-    if (distance <= 6) {
-      return { type: 'resize', boxIndex: i };
-    }
-
-    if (
-      x >= topLeftX &&
-      x <= bottomRightX &&
-      y >= topLeftY &&
-      y <= bottomRightY
-    ) {
-      return { type: 'drag', boxIndex: i };
-    }
-  }
-  return { type: 'none', boxIndex: -1 };
+    // Return if the click is not within any box or resize handle
+    return { type: 'none', boxIndex: -1 };
 }
 
-// // Function to save boxes to a JSON file
+// Adding a mousedown event listener to the imageCanvas
+imageCanvas.addEventListener('mousedown', (e) => {
+	// Getting the position of the canvas relative to the viewport
+	const rect = imageCanvas.getBoundingClientRect();
+	
+	// Calculating the mouse coordinates relative to the canvas
+	mouseX = e.clientX - rect.left;
+	mouseY = e.clientY - rect.top;
+  
+	// Determining the type of action and the index of the box based on the mouse coordinates
+	const { type, boxIndex } = findHandle(mouseX, mouseY);
+  
+	// Handling different actions based on the detected type
+	if (type === 'resize') {
+	  // If a resize action is detected
+	  isDragging = false;
+	  isResizing = true;
+	  resizingBox = boxes[boxIndex]; // Getting the box to be resized
+	  selectedBox = resizingBox; // Selecting the box when clicking on the resize handle
+	} else if (type === 'drag') {
+	  // If a drag action is detected
+	  isDragging = true;
+	  selectedBox = boxes[boxIndex]; // Selecting the box to be dragged
+	} else {
+	  // If neither resize nor drag action is detected
+	  if (selectedBox !== null && selectedBox === boxes[boxIndex]) {
+		// If the clicked box is already selected, deselect it
+		selectedBox = null;
+	  } else {
+		// If a new box creation action is detected
+		isDragging = true;
+		// Creating a new box at the clicked position with initial dimensions
+		const box = { startX: mouseX, startY: mouseY, width: 0, height: 0 };
+		boxes.push(box); // Adding the new box to the boxes array
+		selectedBox = box; // Setting the newly created box as selected
+	  }
+	}
+  
+	// Redraw the canvas to reflect any changes in the boxes
+	draw();
+  });
+
+// Function handling mouse movement on the imageCanvas
+imageCanvas.addEventListener('mousemove', (e) => {
+	// Getting the position of the canvas relative to the viewport
+	const rect = imageCanvas.getBoundingClientRect();
+	
+	// Calculating the mouse coordinates relative to the canvas
+	mouseX = e.clientX - rect.left;
+	mouseY = e.clientY - rect.top;
+  
+	// Checking if dragging action is ongoing
+	if (isDragging) {
+	  // Handling box movement or resizing based on the action type
+	  if (selectedBox !== null && !isResizing) {
+		// If dragging a box (not resizing)
+		const dx = mouseX - selectedBox.startX;
+		const dy = mouseY - selectedBox.startY;
+  
+		// Updating box position and dimensions based on mouse movement
+		selectedBox.startX = mouseX;
+		selectedBox.startY = mouseY;
+		selectedBox.width -= dx;
+		selectedBox.height -= dy;
+	  } else if (isResizing && resizingBox !== null) {
+		// If resizing a box
+		// Calculating and updating the resized box dimensions based on mouse movement
+		resizingBox.width = Math.max(0, mouseX - resizingBox.startX);
+		resizingBox.height = Math.max(0, mouseY - resizingBox.startY);
+	  }
+  
+	  // Redraw the canvas to reflect box movement or resizing
+	  draw();
+	}
+  });
+
+// Adding comment to the event listener for 'mouseup' on imageCanvas
+imageCanvas.addEventListener('mouseup', () => {
+    // Check if dragging or resizing is in progress
+    if (isDragging || isResizing) {
+        isDragging = false;
+        isResizing = false;
+        resizingBox = null;
+
+        // Update text for the selected box if it exists and the input text is not empty
+        const inputText = document.getElementById('textInput');
+        if (selectedBox !== null && inputText.value.trim() !== '') {
+            selectedBox.text = inputText.value.trim();
+            inputText.style.display = 'none'; // Hide text input after saving text
+        }
+
+        draw(); // Redraw the canvas after handling the mouseup event
+    }
+});
+
+// Function to handle keydown events
+document.addEventListener('keydown', (e) => {
+    // Check if the pressed key is 'Delete'
+    if (e.key === 'Delete') {
+        // Check if a box is currently selected
+        if (selectedBox !== null) {
+            // Find the index of the selected box in the boxes array
+            const index = boxes.indexOf(selectedBox);
+            // If the selected box is found in the array
+            if (index !== -1) {
+                // Remove the selected box from the boxes array
+                boxes.splice(index, 1);
+                selectedBox = null; // Clear the selectedBox reference
+                draw(); // Redraw the canvas after removing the box
+            }
+        }
+    }
+});
+
+// Function to find a box based on the coordinates (x, y)
+function findBox(x, y) {
+    // Loop through the boxes array
+    for (let i = 0; i < boxes.length; i++) {
+        const box = boxes[i];
+        // Check if the coordinates (x, y) fall within the boundaries of the current box
+        if (
+            x >= box.startX &&
+            x <= box.startX + box.width &&
+            y >= box.startY &&
+            y <= box.startY + box.height
+        ) {
+            return i; // Return the index of the box if found
+        }
+    }
+    return -1; // Return -1 if no box is found at the given coordinates
+}
+
+// Function to handle the contextmenu event on the imageCanvas
+imageCanvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault(); // Prevent the default context menu from appearing
+
+    // Get the position of the mouse relative to the imageCanvas
+    const rect = imageCanvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+
+    // Find the index of the box at the clicked position
+    const boxIndex = findBox(mouseX, mouseY);
+
+    // If a box exists at the clicked position
+    if (boxIndex !== -1) {
+        // Remove the box from the boxes array
+        boxes.splice(boxIndex, 1);
+        draw(); // Redraw the canvas after removing the box
+    }
+});
+
+// Function to save boxes to a JSON file
 function saveBoxes() {
-  // Save boxes along with their associated text
-  const boxesToSave = boxes.map(box => ({
-    startX: box.startX,
-    startY: box.startY,
-    width: box.width,
-    height: box.height,
-    text: box.text || '' // Ensure text property exists or set it to an empty string
-  }));
+    // Create an array containing boxes data (startX, startY, width, height, and text)
+    const boxesToSave = boxes.map(box => ({
+        startX: box.startX,
+        startY: box.startY,
+        width: box.width,
+        height: box.height,
+        text: box.text || '' // Ensure text property exists or set it to an empty string
+    }));
 
-  const dataToSave = JSON.stringify(boxesToSave);
-  const blob = new Blob([dataToSave], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+    // Convert boxes data to JSON string
+    const dataToSave = JSON.stringify(boxesToSave);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'boxes.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    // Create a Blob (Binary Large Object) containing the JSON data
+    const blob = new Blob([dataToSave], { type: 'application/json' });
+
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+
+    // Create an anchor element to trigger the file download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'boxes.json'; // Set the filename for downloaded file
+    document.body.appendChild(a);
+    a.click(); // Simulate a click on the anchor element to initiate download
+    document.body.removeChild(a); // Remove the anchor element
+    URL.revokeObjectURL(url); // Revoke the object URL to free up resources
 }
 
+// Function to load boxes data from a JSON file
 function loadBoxes(event) {
-  const file = event.target.files[0];
+    const file = event.target.files[0]; // Get the selected file
 
-  if (file) {
-    const reader = new FileReader();
+    if (file) {
+        const reader = new FileReader(); // Create a FileReader object
 
-    reader.onload = function (e) {
-      const loadedData = JSON.parse(e.target.result);
+        reader.onload = function (e) {
+            const loadedData = JSON.parse(e.target.result); // Parse loaded JSON data
 
-      // Load boxes with their associated text
-      boxes = loadedData.map(data => ({
-        startX: data.startX,
-        startY: data.startY,
-        width: data.width,
-        height: data.height,
-        text: data.text || '' // Ensure text property exists or set it to an empty string
-      }));
+            // Load boxes with their associated text from the loaded data
+            boxes = loadedData.map(data => ({
+                startX: data.startX,
+                startY: data.startY,
+                width: data.width,
+                height: data.height,
+                text: data.text || '' // Ensure text property exists or set it to an empty string
+            }));
 
-      draw();
-    };
+            draw(); // Redraw the canvas with the loaded boxes
+        };
 
-    reader.readAsText(file);
-  }
+        reader.readAsText(file); // Read the contents of the file as text
+    }
 }
+
 
 // Event listener for the text input field to update box text on pressing Enter
 const inputText = document.getElementById('textInput');
 inputText.addEventListener('keypress', function (e) {
-  if (e.key === 'Enter') {
-    if (selectedBox !== null && inputText.value.trim() !== '') {
-      selectedBox.text = inputText.value.trim();
-      inputText.style.display = 'none'; // Hide text input after saving text
-      draw();
+    // Check if the 'Enter' key is pressed
+    if (e.key === 'Enter') {
+        // Check if a box is selected and the input text is not empty
+        if (selectedBox !== null && inputText.value.trim() !== '') {
+            selectedBox.text = inputText.value.trim(); // Update the selected box text
+            inputText.style.display = 'none'; // Hide text input after saving text
+            draw(); // Redraw the canvas to display the updated text
+        }
     }
-  }
 });
 
 // Event listener for input element to load JSON file
 const loadInput = document.getElementById('loadInput');
-loadInput.addEventListener('change', loadBoxes);
+loadInput.addEventListener('change', loadBoxes); // When the file input changes, trigger the loadBoxes function
 
 // Event listener for saving boxes when a button is clicked
 const saveButton = document.getElementById('saveButton');
-saveButton.addEventListener('click', saveBoxes);
+saveButton.addEventListener('click', saveBoxes); // When the button is clicked, trigger the saveBoxes function
+
