@@ -32,10 +32,14 @@ function draw() {
     console.log(box.class)
     switch (box.class) {
       case 'title':
+        ctx.strokeStyle = colorTitle;
         ctx.strokeStyle = colorTitle; // Set red color for 'title' class
+        currentColor = colorTitle;
         break;
       case 'question':
         ctx.strokeStyle = colorQuestion; // Set violet color for 'question' class
+        ctx.strokeStyle = colorQuestion;
+        currentColor = colorQuestion;
         break;
       default:
         ctx.strokeStyle = currentColor; // Set default color if no specific class matches
@@ -358,7 +362,8 @@ function saveBoxes() {
       topleftY: box.startY,
       rightbottomX: box.startX + box.width,
       rightbottomY: box.startY + box.height,
-      text: box.text || '' // Ensure text property exists or set it to an empty string
+      text: box.text || '', // Ensure text property exists or set it to an empty string
+      class: box.class
   }));
 
   // Convert boxes data to JSON string
@@ -397,7 +402,8 @@ function loadBoxes(event) {
               startY: data.topleftY,
               width: data.rightbottomX - data.topleftX,
               height: data.rightbottomY - data.topleftY,
-              text: data.text || '' // Ensure text property exists or set it to an empty string
+              text: data.text || '', // Ensure text property exists or set it to an empty string
+              class: data.class
           }));
 
           draw(); // Redraw the canvas with the loaded boxes
@@ -428,6 +434,10 @@ inputText.addEventListener('keypress', function (e) {
 // Event listener for input element to load JSON file
 const loadInput = document.getElementById('loadInput');
 loadInput.addEventListener('change', loadBoxes); // When the file input changes, trigger the loadBoxes function
+
+// Event listener for saving boxes when a button is clicked
+const saveButton = document.getElementById('saveButton');
+saveButton.addEventListener('click', saveBoxes); // When the button is clicked, trigger the saveBoxes function
 
 // Select the buttons
 const titleModeBtn = document.getElementById('titleModeBtn');
