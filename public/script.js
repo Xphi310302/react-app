@@ -8,13 +8,14 @@ let selectedBox = null;
 let boxes = []; // Array to store box coordinates
 let resizingBox = null; // Variable to track the box being resized
 let isResizing = false; // Flag to track resize status
-
-
 // Variables to store the current mode
 let currentMode = 'title'; // Default mode is 'title'
 let colorQuestion = 'green';
 let colorTitle = 'red';
 let currentColor = colorTitle;
+// Threshold for removing small boxes automatically
+removeThreshold = 5;
+
 
 // Function to set the current mode
 function setMode(mode, color) {
@@ -22,7 +23,13 @@ function setMode(mode, color) {
   currentColor = color
   draw(); // Redraw the canvas based on the selected mode
 }
+// Function to remove boxes with absolute height or width < 0.5
+function removeSmallBoxes() {
+  boxes = boxes.filter(box => Math.abs(box.width) >= removeThreshold && Math.abs(box.height) >= removeThreshold);
+  draw(); // Redraw the canvas after removing small boxes
+}
 
+// Draw
 function draw() {
   // console.log(currentMode)
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
@@ -295,6 +302,8 @@ imageCanvas.addEventListener('mouseup', () => {
 
         draw(); // Redraw the canvas after handling the mouseup event
     }
+
+    removeSmallBoxes() // Remove small boxes after the mouse is released
 });
 
 // Function to handle keydown events
@@ -385,7 +394,6 @@ function saveBoxes() {
   URL.revokeObjectURL(url); // Revoke the object URL to free up resources
 }
 
-
 // Function to load boxes data from a JSON file
 function loadBoxes(event) {
   const file = event.target.files[0]; // Get the selected file
@@ -412,8 +420,6 @@ function loadBoxes(event) {
       reader.readAsText(file); // Read the contents of the file as text
   }
 }
-
-
 
 // Event listener for the text input field to update box text on pressing Enter
 const inputText = document.getElementById('textInput');

@@ -9,8 +9,10 @@
   <div class="container">
     <div class="left-column">
       <input type="file" id="imageInput" accept="image/*">
-      <button id = "titleButton" class="title" onclick="setMode('title')">Title Mode</button>
-      <button id = "questionButton" class="question" onclick="setMode('question')">Question Mode</button>
+      <div class="buttons-container">
+        <button id="titleButton" class="title" onclick="setMode('title')">Title Mode</button>
+        <button id="questionButton" class="question" onclick="setMode('question')">Question Mode</button>
+      </div>
       <div class="image-container">
         <canvas id="imageCanvas"></canvas>
       </div>
@@ -24,6 +26,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 <!-- <!DOCTYPE html>
 <html lang="en">
