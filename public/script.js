@@ -108,53 +108,54 @@ imageInput.addEventListener('change', function (event) {
 	}
   });
 
-  function findHandle(x, y) {
-    // Iterate through all the boxes in the 'boxes' array
-    for (let i = 0; i < boxes.length; i++) {
-        const box = boxes[i]; // Get the current box
 
-        let topLeftX, topLeftY, bottomRightX, bottomRightY;
+function findHandle(x, y) {
+  // Iterate through all the boxes in the 'boxes' array
+  for (let i = 0; i < boxes.length; i++) {
+      const box = boxes[i]; // Get the current box
 
-        // Determine coordinates of the top-left and bottom-right corners of the box
-        if (box.width >= 0 && box.height >= 0) {
-            topLeftX = box.startX;
-            topLeftY = box.startY;
-            bottomRightX = box.startX + box.width;
-            bottomRightY = box.startY + box.height;
-        } else {
-            bottomRightX = box.startX;
-            bottomRightY = box.startY;
-            topLeftX = box.startX + box.width;
-            topLeftY = box.startY + box.height;
-        }
+      let topLeftX, topLeftY, bottomRightX, bottomRightY;
 
-        // Calculate the center of the box
-        const centerX = bottomRightX;
-        const centerY = bottomRightY;
+      // Determine coordinates of the top-left and bottom-right corners of the box
+      if (box.width >= 0 && box.height >= 0) {
+          topLeftX = box.startX;
+          topLeftY = box.startY;
+          bottomRightX = box.startX + box.width;
+          bottomRightY = box.startY + box.height;
+      } else {
+          bottomRightX = box.startX;
+          bottomRightY = box.startY;
+          topLeftX = box.startX + box.width;
+          topLeftY = box.startY + box.height;
+      }
 
-        // Calculate the distance between the mouse pointer and the center of the box
-        const distX = x - centerX;
-        const distY = y - centerY;
-        const distance = Math.sqrt(distX * distX + distY * distY);
+      // Calculate the center of the box
+      const centerX = bottomRightX;
+      const centerY = bottomRightY;
 
-        // If the distance is within a threshold (6 in this case), consider it a resize handle
-        if (distance <= 6) {
-            return { type: 'resize', boxIndex: i }; // Return resize handle type and box index
-        }
+      // Calculate the distance between the mouse pointer and the center of the box
+      const distX = x - centerX;
+      const distY = y - centerY;
+      const distance = Math.sqrt(distX * distX + distY * distY);
 
-        // Check if the mouse pointer is inside the bounding box of the current box
-        if (
-            x >= Math.min(topLeftX, bottomRightX) &&
-            x <= Math.max(topLeftX, bottomRightX) &&
-            y >= Math.min(topLeftY, bottomRightY) &&
-            y <= Math.max(topLeftY, bottomRightY)
-        ) {
-            return { type: 'drag', boxIndex: i }; // Return drag type and box index
-        }
-    }
+      // If the distance is within a threshold (6 in this case), consider it a resize handle
+      if (distance <= 6) {
+          return { type: 'resize', boxIndex: i }; // Return resize handle type and box index
+      }
 
-    // If no box or handle is found under the mouse pointer, return type 'none' and box index -1
-    return { type: 'none', boxIndex: -1 };
+      // Check if the mouse pointer is inside the bounding box of the current box
+      if (
+          x >= Math.min(topLeftX, bottomRightX) &&
+          x <= Math.max(topLeftX, bottomRightX) &&
+          y >= Math.min(topLeftY, bottomRightY) &&
+          y <= Math.max(topLeftY, bottomRightY)
+      ) {
+          return { type: 'drag', boxIndex: i }; // Return drag type and box index
+      }
+  }
+
+  // If no box or handle is found under the mouse pointer, return type 'none' and box index -1
+  return { type: 'none', boxIndex: -1 };
 }
 
 
@@ -312,58 +313,58 @@ imageCanvas.addEventListener('contextmenu', (e) => {
 
 // Function to save boxes to a JSON file
 function saveBoxes() {
-    // Create an array containing boxes data (startX, startY, width, height, and text)
-    const boxesToSave = boxes.map(box => ({
-        startX: box.startX,
-        startY: box.startY,
-        width: box.width,
-        height: box.height,
-        text: box.text || '' // Ensure text property exists or set it to an empty string
-    }));
+  // Create an array containing boxes data (topleftX, topleftY, rightbottomX, rightbottomY, and text)
+  const boxesToSave = boxes.map(box => ({
+      topleftX: box.startX,
+      topleftY: box.startY,
+      rightbottomX: box.startX + box.width,
+      rightbottomY: box.startY + box.height,
+      text: box.text || '' // Ensure text property exists or set it to an empty string
+  }));
 
-    // Convert boxes data to JSON string
-    const dataToSave = JSON.stringify(boxesToSave);
+  // Convert boxes data to JSON string
+  const dataToSave = JSON.stringify(boxesToSave);
 
-    // Create a Blob (Binary Large Object) containing the JSON data
-    const blob = new Blob([dataToSave], { type: 'application/json' });
+  // Create a Blob (Binary Large Object) containing the JSON data
+  const blob = new Blob([dataToSave], { type: 'application/json' });
 
-    // Create a URL for the Blob
-    const url = URL.createObjectURL(blob);
+  // Create a URL for the Blob
+  const url = URL.createObjectURL(blob);
 
-    // Create an anchor element to trigger the file download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'boxes.json'; // Set the filename for downloaded file
-    document.body.appendChild(a);
-    a.click(); // Simulate a click on the anchor element to initiate download
-    document.body.removeChild(a); // Remove the anchor element
-    URL.revokeObjectURL(url); // Revoke the object URL to free up resources
+  // Create an anchor element to trigger the file download
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'boxes.json'; // Set the filename for downloaded file
+  document.body.appendChild(a);
+  a.click(); // Simulate a click on the anchor element to initiate download
+  document.body.removeChild(a); // Remove the anchor element
+  URL.revokeObjectURL(url); // Revoke the object URL to free up resources
 }
 
 // Function to load boxes data from a JSON file
 function loadBoxes(event) {
-    const file = event.target.files[0]; // Get the selected file
+  const file = event.target.files[0]; // Get the selected file
 
-    if (file) {
-        const reader = new FileReader(); // Create a FileReader object
+  if (file) {
+      const reader = new FileReader(); // Create a FileReader object
 
-        reader.onload = function (e) {
-            const loadedData = JSON.parse(e.target.result); // Parse loaded JSON data
+      reader.onload = function (e) {
+          const loadedData = JSON.parse(e.target.result); // Parse loaded JSON data
 
-            // Load boxes with their associated text from the loaded data
-            boxes = loadedData.map(data => ({
-                startX: data.startX,
-                startY: data.startY,
-                width: data.width,
-                height: data.height,
-                text: data.text || '' // Ensure text property exists or set it to an empty string
-            }));
+          // Load boxes with their associated text from the loaded data
+          boxes = loadedData.map(data => ({
+              startX: data.topleftX,
+              startY: data.topleftY,
+              width: data.rightbottomX - data.topleftX,
+              height: data.rightbottomY - data.topleftY,
+              text: data.text || '' // Ensure text property exists or set it to an empty string
+          }));
 
-            draw(); // Redraw the canvas with the loaded boxes
-        };
+          draw(); // Redraw the canvas with the loaded boxes
+      };
 
-        reader.readAsText(file); // Read the contents of the file as text
-    }
+      reader.readAsText(file); // Read the contents of the file as text
+  }
 }
 
 // Event listener for the text input field to update box text on pressing Enter
