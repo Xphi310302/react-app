@@ -32,6 +32,35 @@ margin-left: 20px; /* Add space between left and right columns */
 margin-bottom: 10px; /* Add some space between input and button */
 }
 
+
+
+#questionButton {
+padding: 8px 15px;
+background-color: #1aff2d;
+/* color: #fff; */
+border: none;
+cursor: pointer;
+}
+
+/* Optional: You can add more styling to the button (hover effects, etc.) */
+#questionButton:hover {
+background-color: #13b258;
+}
+
+
+#titleButton {
+padding: 8px 15px;
+background-color: #ff1a1a;
+/* color: #fff; */
+border: none;
+cursor: pointer;
+  }
+
+/* Optional: You can add more styling to the button (hover effects, etc.) */
+#titleButton:hover {
+background-color: #cc0853;
+}
+
 #saveButton {
 padding: 8px 15px;
 background-color: #3498db;

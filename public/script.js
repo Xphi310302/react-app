@@ -9,13 +9,41 @@ let boxes = []; // Array to store box coordinates
 let resizingBox = null; // Variable to track the box being resized
 let isResizing = false; // Flag to track resize status
 
+
+// Variables to store the current mode
+let currentMode = 'title'; // Default mode is 'title'
+let colorQuestion = 'green';
+let colorTitle = 'red';
+let currentColor = colorTitle;
+
+// Function to set the current mode
+function setMode(mode, color) {
+  currentMode = mode;
+  currentColor = color
+  draw(); // Redraw the canvas based on the selected mode
+}
+
 function draw() {
+  // console.log(currentMode)
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
   ctx.drawImage(img, 0, 0, img.width, img.height);
 
   boxes.forEach((box, index) => {
-    ctx.strokeStyle = selectedBox === box ? 'blue' : 'red';
-    ctx.lineWidth = 0.6;
+    console.log(box.class)
+    switch (box.class) {
+      case 'title':
+        ctx.strokeStyle = colorTitle; // Set red color for 'title' class
+        break;
+      case 'question':
+        ctx.strokeStyle = colorQuestion; // Set violet color for 'question' class
+        break;
+      default:
+        ctx.strokeStyle = currentColor; // Set default color if no specific class matches
+        break;
+    }
+
+    ctx.strokeStyle = selectedBox === box ? 'blue' : currentColor;
+    ctx.lineWidth = 1.5;
     ctx.strokeRect(box.startX, box.startY, box.width, box.height);
 
 	 // **Comment out the following code to remove the circle**
@@ -42,6 +70,7 @@ function draw() {
   }
 }
 
+
 // Function to adjust the size of input elements based on imageCanvas size
 function adjustInputElementsSize() {
 	const canvasRect = imageCanvas.getBoundingClientRect();
@@ -59,6 +88,14 @@ function adjustInputElementsSize() {
 	  button.style.fontSize = `${scaleFactor * 14}px`; // Adjust button font size
 	  button.style.padding = `${scaleFactor * 8}px ${scaleFactor * 16}px`; // Adjust button padding
 	});
+
+  // Adjust padding for question and title buttonz
+  const button_class = document.querySelectorAll('#questionButton, #titleButton');
+  button_class.forEach(button => {
+    button.style.fontSize = `${scaleFactor * 12}px`; // Adjust button font size
+    button.style.padding = `${scaleFactor * 6}px ${scaleFactor * 13}px`; // Adjust button padding
+  });
+
   }
 
 // Call the function to delete all boxes
@@ -71,6 +108,7 @@ function deleteAllBoxes() {
       draw(); // Redraw the canvas after removing all the boxes
   }
 }
+
 // Adding an event listener to 'imageInput' element when a file is selected
 imageInput.addEventListener('change', function (event) {
   // delete Allboxes if there are any 
@@ -191,7 +229,7 @@ imageCanvas.addEventListener('mousedown', (e) => {
 		// If a new box creation action is detected
 		isDragging = true;
 		// Creating a new box at the clicked position with initial dimensions
-		const box = { startX: mouseX, startY: mouseY, width: 0, height: 0 };
+		const box = { startX: mouseX, startY: mouseY, width: 0, height: 0 , class: currentMode};
 		boxes.push(box); // Adding the new box to the boxes array
 		selectedBox = box; // Setting the newly created box as selected
 	  }
@@ -230,6 +268,7 @@ imageCanvas.addEventListener('mousemove', (e) => {
 		resizingBox.height = Math.max(0, mouseY - resizingBox.startY);
 	  }
   
+    // clearSmallBoxes()
 	  // Redraw the canvas to reflect box movement or resizing
 	  draw();
 	}
@@ -341,6 +380,7 @@ function saveBoxes() {
   URL.revokeObjectURL(url); // Revoke the object URL to free up resources
 }
 
+
 // Function to load boxes data from a JSON file
 function loadBoxes(event) {
   const file = event.target.files[0]; // Get the selected file
@@ -367,6 +407,8 @@ function loadBoxes(event) {
   }
 }
 
+
+
 // Event listener for the text input field to update box text on pressing Enter
 const inputText = document.getElementById('textInput');
 inputText.addEventListener('keypress', function (e) {
@@ -381,11 +423,24 @@ inputText.addEventListener('keypress', function (e) {
     }
 });
 
+
+
 // Event listener for input element to load JSON file
 const loadInput = document.getElementById('loadInput');
 loadInput.addEventListener('change', loadBoxes); // When the file input changes, trigger the loadBoxes function
 
-// Event listener for saving boxes when a button is clicked
-const saveButton = document.getElementById('saveButton');
-saveButton.addEventListener('click', saveBoxes); // When the button is clicked, trigger the saveBoxes function
+// Select the buttons
+const titleModeBtn = document.getElementById('titleModeBtn');
+const questionModeBtn = document.getElementById('questionModeBtn');
+
+// Event listener for the 'Title Mode' button
+titleModeBtn.addEventListener('click', function() {
+  setMode('title', colorTitle); // Set mode to 'title' with red color
+});
+
+// Event listener for the 'Question Mode' button
+questionModeBtn.addEventListener('click', function() {
+  setMode('question', colorQuestion); // Set mode to 'question' with violet color
+});
+
 

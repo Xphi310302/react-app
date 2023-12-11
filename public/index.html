@@ -9,6 +9,8 @@
   <div class="container">
     <div class="left-column">
       <input type="file" id="imageInput" accept="image/*">
+      <button id = "titleButton" class="title" onclick="setMode('title')">Title Mode</button>
+      <button id = "questionButton" class="question" onclick="setMode('question')">Question Mode</button>
       <div class="image-container">
         <canvas id="imageCanvas"></canvas>
       </div>
@@ -22,3 +24,34 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Certificate Detection</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="left-column">
+      <input type="file" id="imageInput" accept="image/*">
+      <label for="titleCheckbox">Title Mode</label>
+      <input type="checkbox" id="titleCheckbox" class="titleCheckbox" onclick="setMode('title')">
+      <label for="questionCheckbox">Question Mode</label>
+      <input type="checkbox" id="questionCheckbox" class="questionCheckbox" onclick="setMode('question')">
+      <div class="image-container">
+        <canvas id="imageCanvas"></canvas>
+      </div>
+    </div>
+    <div class="right-column">
+      <input type="text" id="textInput" placeholder="Enter text for selected box">
+      <input type="file" id="loadInput" accept=".json">
+      <button id="saveButton">Save Boxes</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html> -->
+
+
