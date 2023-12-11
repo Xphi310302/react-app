@@ -9,8 +9,6 @@ let boxes = []; // Array to store box coordinates
 let resizingBox = null; // Variable to track the box being resized
 let isResizing = false; // Flag to track resize status
 
-// let scale = 1;
-// let img = null;
 function draw() {
   ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
   ctx.drawImage(img, 0, 0, img.width, img.height);
@@ -62,8 +60,21 @@ function adjustInputElementsSize() {
 	  button.style.padding = `${scaleFactor * 8}px ${scaleFactor * 16}px`; // Adjust button padding
 	});
   }
+
+// Call the function to delete all boxes
+function deleteAllBoxes() {
+  // Check if there are boxes in the array
+  if (boxes.length > 0) {
+      // Remove all boxes from the array
+      boxes.splice(0, boxes.length);
+      selectedBox = null; // Clear the selectedBox reference
+      draw(); // Redraw the canvas after removing all the boxes
+  }
+}
 // Adding an event listener to 'imageInput' element when a file is selected
 imageInput.addEventListener('change', function (event) {
+  // delete Allboxes if there are any 
+  deleteAllBoxes() 
 	// Retrieving the selected file
 	const file = event.target.files[0];
   
@@ -97,12 +108,14 @@ imageInput.addEventListener('change', function (event) {
 	}
   });
 
-function findHandle(x, y) {
+  function findHandle(x, y) {
+    // Iterate through all the boxes in the 'boxes' array
     for (let i = 0; i < boxes.length; i++) {
-        const box = boxes[i];
-        
+        const box = boxes[i]; // Get the current box
+
         let topLeftX, topLeftY, bottomRightX, bottomRightY;
 
+        // Determine coordinates of the top-left and bottom-right corners of the box
         if (box.width >= 0 && box.height >= 0) {
             topLeftX = box.startX;
             topLeftY = box.startY;
@@ -115,28 +128,35 @@ function findHandle(x, y) {
             topLeftY = box.startY + box.height;
         }
 
+        // Calculate the center of the box
         const centerX = bottomRightX;
         const centerY = bottomRightY;
 
+        // Calculate the distance between the mouse pointer and the center of the box
         const distX = x - centerX;
         const distY = y - centerY;
         const distance = Math.sqrt(distX * distX + distY * distY);
 
+        // If the distance is within a threshold (6 in this case), consider it a resize handle
         if (distance <= 6) {
-            return { type: 'resize', boxIndex: i };
+            return { type: 'resize', boxIndex: i }; // Return resize handle type and box index
         }
 
+        // Check if the mouse pointer is inside the bounding box of the current box
         if (
             x >= Math.min(topLeftX, bottomRightX) &&
             x <= Math.max(topLeftX, bottomRightX) &&
             y >= Math.min(topLeftY, bottomRightY) &&
             y <= Math.max(topLeftY, bottomRightY)
         ) {
-            return { type: 'drag', boxIndex: i };
+            return { type: 'drag', boxIndex: i }; // Return drag type and box index
         }
     }
+
+    // If no box or handle is found under the mouse pointer, return type 'none' and box index -1
     return { type: 'none', boxIndex: -1 };
 }
+
 
 // Adding a mousedown event listener to the imageCanvas
 imageCanvas.addEventListener('mousedown', (e) => {
